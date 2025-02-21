@@ -1,17 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, Mail, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Camera, Mail, Save, User } from "lucide-react";
 
 const ProfilePage = () => {
-  const { authUser, isUpdatingProfile, updateAvatar, checkAuth } =
+  const { authUser, isUpdatingProfile, updateAvatar, updateUser, checkAuth } =
     useAuthStore();
   const navigate = useNavigate();
+  const [userData, setUserData] = useState({
+    username: "",
+    email: "",
+  });
+
   const [selectedImg, setSelectedImg] = useState(null);
+
+  const isFirstLoading = useRef(true);
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+
+    if (authUser && isFirstLoading.current) {
+      setUserData({
+        username: authUser.username || "",
+        email: authUser.email || "",
+      });
+      isFirstLoading.current = false;
+    }
+  }, [authUser, checkAuth]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -32,6 +46,18 @@ const ProfilePage = () => {
         console.error("Avatar update failed:", error);
       }
     };
+  };
+
+  const handleInputChange = (e) => {
+    setUserData({ ...userData, [e.target.name]: e.target.value });
+  };
+
+  const handleUpdateUser = async () => {
+    try {
+      await updateUser(authUser._id, userData);
+    } catch (error) {
+      console.error("User update failed:", error);
+    }
   };
 
   return (
@@ -80,26 +106,43 @@ const ProfilePage = () => {
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 mt-6">
           <div className="space-y-1.5">
-            <div className="text-sm text-zinc-400 flex items-center gap-2">
+            <label className="text-sm text-zinc-400 flex items-center gap-2">
               <User className="w-4 h-4" />
               Full Name
-            </div>
-            <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
-              {authUser?.username || "Loading..."}
-            </p>
+            </label>
+            <input
+              type="text"
+              name="username"
+              value={userData.username}
+              onChange={handleInputChange}
+              className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
+            />
           </div>
 
           <div className="space-y-1.5">
-            <div className="text-sm text-zinc-400 flex items-center gap-2">
+            <label className="text-sm text-zinc-400 flex items-center gap-2">
               <Mail className="w-4 h-4" />
               Email Address
-            </div>
-            <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
-              {authUser?.email || "Loading..."}
-            </p>
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={userData.email}
+              onChange={handleInputChange}
+              className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
+            />
           </div>
+
+          <button
+            onClick={handleUpdateUser}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition"
+            disabled={isUpdatingProfile}
+          >
+            <Save className="w-5 h-5" />
+            {isUpdatingProfile ? "Saving..." : "Save Changes"}
+          </button>
         </div>
 
         <div className="mt-6 bg-base-300 rounded-xl p-6">

@@ -66,6 +66,7 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: null });
       toast.success("Account log out successfully");
       get().disconeSocket();
+      document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     } catch (error) {
       toast.error(error.response.data.message);
     }
@@ -81,6 +82,19 @@ export const useAuthStore = create((set, get) => ({
       toast.error(error.response.data.message);
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },
+
+  updateUser: async (userId, data) => {
+    set({ isUpdatingUser: true });
+    try {
+      const res = await axiosInstance.put(`/auth/update-user/${userId}`, data);
+      set({ authUser: res.data }); // Cập nhật authUser với dữ liệu mới
+      toast.success("User info updated successfully");
+    } catch (error) {
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isUpdatingUser: false });
     }
   },
 

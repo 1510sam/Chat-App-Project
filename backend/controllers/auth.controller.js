@@ -90,17 +90,12 @@ export const Signin = async (req, res) => {
 
 export const Signout = (req, res) => {
   try {
-    res.cookie("jwt", "", {
-      expires: new Date(0),
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
+    res.clearCookie("jwt");
     return res.status(200).json({
       message: "User logged out successfully",
     });
   } catch (error) {
-    console.log("Error in login controller", error.message);
+    console.log("Error in logout controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -127,6 +122,27 @@ export const updateAvatar = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in upate avatar controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userData = req.body;
+    if (!userData) {
+      return res.status(400).json({ message: "Please fill your information" });
+    }
+    const updateUser = await UserModel.findByIdAndUpdate(id, userData, {
+      new: true,
+    });
+
+    res.status(200).json({
+      updateUser,
+      message: "Update user info successfully",
+    });
+  } catch (error) {
+    console.log("Error in update user controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

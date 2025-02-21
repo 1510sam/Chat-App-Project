@@ -1,9 +1,47 @@
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
+
+  const handleLogout = () => {
+    toast.info(
+      <div>
+        <p>Bạn có muốn đăng xuất không?</p>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => {
+              logout();
+              toast.dismiss();
+              setTimeout(() => {
+                window.location.href = "/login";
+              }, 3000);
+            }}
+            className="px-3 py-1 bg-blue-500 text-white rounded"
+          >
+            Có
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 bg-gray-500 text-white rounded"
+          >
+            Không
+          </button>
+        </div>
+      </div>,
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        pauseOnHover: true,
+      }
+    );
+  };
+
   return (
     <header
       className="bg-base-100 border-b border-base-300 fixed w-full top-0 z-40 
@@ -26,28 +64,28 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             <Link
               to={"/settings"}
-              className={`
-              btn btn-sm gap-2 transition-colors
-              
-              `}
+              className="btn btn-sm gap-2 transition-colors"
             >
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
-
-              {authUser && (
-                <>
-                  <Link to={"/profile"} className={`btn btn-sm gap-2`}>
-                    <User className="size-5" />
-                    <span className="hidden sm:inline">Profile</span>
-                  </Link>
-
-                  <button className="flex gap-2 items-center" onClick={logout}>
-                    <LogOut className="size-5" />
-                    <span className="hidden sm:inline">Logout</span>
-                  </button>
-                </>
-              )}
             </Link>
+
+            {authUser && (
+              <>
+                <Link to={"/profile"} className="btn btn-sm gap-2">
+                  <User className="size-5" />
+                  <span className="hidden sm:inline">Profile</span>
+                </Link>
+
+                <button
+                  className="flex gap-2 items-center"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="size-5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
