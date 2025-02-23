@@ -6,7 +6,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { toast } from "react-toastify";
 import AuthImagePattern from "../components/authImagePatern";
 
-const RECAPTCHA_SITE_KEY = "6Lehwt8qAAAAAEYPS8SH4Hpoph_ud6xFQUmPyEwb";
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY; // For Vite
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);

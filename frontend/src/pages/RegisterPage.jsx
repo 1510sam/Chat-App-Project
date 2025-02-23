@@ -14,7 +14,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { useNavigate } from "react-router-dom";
 import AuthImagePattern from "../components/authImagePatern";
 
-const RECAPTCHA_SITE_KEY = "6Lehwt8qAAAAAEYPS8SH4Hpoph_ud6xFQUmPyEwb";
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY; // For Vite
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
