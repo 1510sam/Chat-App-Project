@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Camera, Mail, Save, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateAvatar, updateUser, checkAuth } =

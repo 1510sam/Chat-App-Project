@@ -2,31 +2,78 @@ import cloudinary from "../libs/cloudinary.js";
 import { generateToken } from "../libs/util.js";
 import UserModel from "../models/User.model.js";
 import bcryptjs from "bcryptjs";
+import axios from "axios";
+
+export const verifyCaptcha = async (captchaToken) => {
+  try {
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
+      {
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY, // Lấy từ file .env
+          response: captchaToken,
+        },
+      }
+    );
+    return response.data.success;
+  } catch (error) {
+    console.error("Error verifying reCAPTCHA:", error);
+    return false;
+  }
+};
 
 export const Signup = async (req, res) => {
   try {
-    const { email, username, password, avatar } = req.body;
+    const { email, username, password, avatar, recaptchaToken } = req.body;
+
+    // Kiểm tra thông tin đầu vào
     if (!email || !username || !password) {
-      return res.status(400).json({
-        message: "Please enter your information",
-      });
+      return res.status(400).json({ message: "Please enter your information" });
     }
-    // Check password length
     if (password.length < 6) {
-      return res.status(400).json({
-        message: "Password must be at least 6 characters",
-      });
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
-    const user = await UserModel.findOne({ email });
-    if (user) {
-      return res.status(400).json({
-        message: "Email already exists",
-      });
+    if (!recaptchaToken) {
+      return res.status(400).json({ message: "Captcha verification failed" });
     }
+
+    // Xác minh Google reCAPTCHA
+    const captchaRes = await axios.post(
+      "https://www.google.com/recaptcha/api/siteverify",
+      null,
+      {
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY, // Lấy từ .env
+          response: recaptchaToken, // Sửa lại cho đúng tên biến
+        },
+      }
+    );
+
+    if (!captchaRes.data.success) {
+      return res.status(400).json({ message: "Captcha verification failed" });
+    }
+
+    // Kiểm tra xem email đã tồn tại chưa
+    const userExists = await UserModel.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    // Hash password
     const salt = await bcryptjs.genSalt(10);
-    // hash: pass, salt
-    const hassPassword = await bcryptjs.hash(password, salt);
-    const newUser = new UserModel({ username, email, password: hassPassword });
+    const hashedPassword = await bcryptjs.hash(password, salt);
+
+    // Tạo user mới
+    const newUser = new UserModel({
+      username,
+      email,
+      password: hashedPassword,
+      avatar,
+    });
+
     if (newUser) {
       generateToken(newUser._id, res);
       await newUser.save();
@@ -35,28 +82,29 @@ export const Signup = async (req, res) => {
         username: newUser.username,
         email: newUser.email,
         avatar: newUser.avatar,
-        message: "User registed successfully",
+        message: "User registered successfully",
       });
     }
   } catch (err) {
     console.error(err.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
 export const Signin = async (req, res) => {
-  const { email, password } = req.body;
-  const reg =
-    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-  const isCheckMail = reg.test(email);
+  const { email, password, recaptchaToken } = req.body;
+  //console.log("Received reCAPTCHA token:", recaptchaToken);
+
   if (!email || !password) {
-    return res.status(400).json({
-      message: "Please enter your information",
-    });
-  } else if (!isCheckMail) {
-    return res.status(400).json({
-      message: "Email is not valid",
-    });
+    return res.status(400).json({ message: "Please enter your information" });
   }
+
+  // Kiểm tra token reCAPTCHA trước khi tiếp tục
+  const isCaptchaValid = await verifyCaptcha(recaptchaToken);
+  if (!isCaptchaValid) {
+    return res.status(400).json({ message: "Captcha verification failed" });
+  }
+
   try {
     const checkUser = await UserModel.findOne({ email });
 
@@ -76,7 +124,7 @@ export const Signin = async (req, res) => {
 
     res.status(200).json({
       _id: checkUser._id,
-      fullName: checkUser.fullName,
+      username: checkUser.username,
       email: checkUser.email,
       avatar: checkUser.avatar,
       message: "User login successfully",
@@ -143,6 +191,31 @@ export const updateUser = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in update user controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { email, oldPass, newPass } = req.body;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    const validPassword = await bcryptjs.compare(oldPass, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ message: "Old password is incorrect" });
+    }
+    const salt = await bcryptjs.genSalt(10);
+    // hash: pass, salt
+    const hassPassword = await bcryptjs.hash(newPass, salt);
+    user.password = hassPassword;
+    await user.save();
+    res.status(200).json({
+      message: "Update password successfully",
+    });
+  } catch (error) {
+    console.log("Error in update password controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

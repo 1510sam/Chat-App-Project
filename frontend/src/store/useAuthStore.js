@@ -55,7 +55,7 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
-      set({ isSigningUp: false });
+      set({ isSigningIn: false });
     }
   },
 
@@ -95,6 +95,21 @@ export const useAuthStore = create((set, get) => ({
       toast.error(error.response.data.message);
     } finally {
       set({ isUpdatingUser: false });
+    }
+  },
+
+  changePassword: async (data) => {
+    set({ isUpdatingPass: true });
+    try {
+      const res = await axiosInstance.post(`/auth/change-password`, data);
+      set({ authUser: null }); // Cập nhật authUser với dữ liệu mới
+      toast.success("Password updated successfully");
+      return res.data; // Trả về dữ liệu để xử lý tiếp
+    } catch (error) {
+      toast.error(error.response.data.message);
+      throw error; // Ném lỗi để xử lý tiếp
+    } finally {
+      set({ isUpdatingPass: false });
     }
   },
 

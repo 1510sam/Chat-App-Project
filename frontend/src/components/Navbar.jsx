@@ -1,34 +1,34 @@
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
-
+  const navigate = useNavigate();
   const handleLogout = () => {
     toast.info(
       <div>
-        <p>Bạn có muốn đăng xuất không?</p>
+        <p>Do you want to log out?</p>
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => {
               logout();
               toast.dismiss();
               setTimeout(() => {
-                window.location.href = "/login";
-              }, 3000);
+                navigate("/login");
+              }, 1000);
             }}
             className="px-3 py-1 bg-blue-500 text-white rounded"
           >
-            Có
+            Yes
           </button>
           <button
             onClick={() => toast.dismiss()}
             className="px-3 py-1 bg-gray-500 text-white rounded"
           >
-            Không
+            No
           </button>
         </div>
       </div>,

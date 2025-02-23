@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { ToastContainer } from "react-toastify";
 import { useThemeStore } from "./store/useThemeStore";
+import ResetPasswordPage from "./pages/ResetPassword";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -48,6 +49,10 @@ const App = () => {
         <Route
           path="/profile"
           element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/forgot-password"
+          element={!authUser ? <ResetPasswordPage /> : <Navigate to="/" />}
         />
       </Routes>
       <ToastContainer />

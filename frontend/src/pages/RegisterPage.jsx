@@ -10,14 +10,31 @@ import {
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { toast } from "react-toastify";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useNavigate } from "react-router-dom";
+import AuthImagePattern from "../components/authImagePatern";
+
+const RECAPTCHA_SITE_KEY = "6Lehwt8qAAAAAEYPS8SH4Hpoph_ud6xFQUmPyEwb";
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    recaptchaToken: "",
   });
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+
+  const handleRecaptcha = (token) => {
+    setRecaptchaToken(token); // Cập nhật state recaptchaToken
+    setFormData((prevData) => ({
+      ...prevData,
+      recaptchaToken: token, // Cập nhật vào formData
+    }));
+  };
+
   const { signup, isSigningUp } = useAuthStore();
   const validateForm = () => {
     if (!/\S+@\S+\.\S+/.test(formData.email))
@@ -25,12 +42,17 @@ const RegisterPage = () => {
     if (!formData.password) return toast.error("Password is required");
     if (formData.password.length < 6)
       return toast.error("Password must be at least 6 characters");
+    if (!recaptchaToken) return toast.error("Please verify reCAPTCHA");
     return true;
   };
   const handleSubmit = (e) => {
     e.preventDefault();
     const isSubmit = validateForm();
-    if (isSubmit == true) signup(formData);
+    if (!recaptchaToken) return toast.error("Please verify reCAPTCHA");
+    if (isSubmit == true) {
+      signup(formData);
+      navigate("/login");
+    }
   };
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -123,6 +145,14 @@ const RegisterPage = () => {
               </div>
             </div>
 
+            {/* reCAPTCHA */}
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                sitekey={RECAPTCHA_SITE_KEY}
+                onChange={handleRecaptcha}
+              />
+            </div>
+
             <button className="btn btn-primary w-full" disabled={isSigningUp}>
               {isSigningUp ? (
                 <>
@@ -136,6 +166,13 @@ const RegisterPage = () => {
           </form>
         </div>
       </div>
+
+      {/* right side */}
+
+      <AuthImagePattern
+        title="Join our community"
+        subtitle="Connect with friends, share moments, and stay in touch with your loved ones."
+      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { Phone } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -28,9 +29,14 @@ const ChatHeader = () => {
       </div>
 
       {/* Close button */}
-      <button onClick={() => setSelectedUser(null)}>
-        <X />
-      </button>
+      <div className="flex justify-around items-center gap-4">
+        <button>
+          <Phone />
+        </button>
+        <button onClick={() => setSelectedUser(null)}>
+          <X />
+        </button>
+      </div>
     </div>
   );
 };
