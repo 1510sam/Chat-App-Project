@@ -4,13 +4,13 @@ import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ResetPasswordPage = () => {
-  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
-    oldPass: "",
     newPass: "",
+    confirmNewPass: "",
   });
   const { changePassword, isUpdatingPass } = useAuthStore();
   const handleChangePass = async (e) => {
@@ -67,39 +67,6 @@ const ResetPasswordPage = () => {
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">
-                  Enter current password
-                </span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="size-5 text-base-content/40" />
-                </div>
-                <input
-                  className={`input input-bordered w-full pl-10`}
-                  type={showOldPassword ? "text" : "password"}
-                  placeholder="******"
-                  value={formData.oldPass}
-                  onChange={(e) =>
-                    setFormData({ ...formData, oldPass: e.target.value })
-                  }
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowOldPassword(!showOldPassword)}
-                >
-                  {showOldPassword ? (
-                    <EyeOff className="size-5 text-base-content/40" />
-                  ) : (
-                    <Eye className="size-5 text-base-content/40" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">
                   Enter new password
                 </span>
               </label>
@@ -122,6 +89,39 @@ const ResetPasswordPage = () => {
                   onClick={() => setShowNewPassword(!showNewPassword)}
                 >
                   {showNewPassword ? (
+                    <EyeOff className="size-5 text-base-content/40" />
+                  ) : (
+                    <Eye className="size-5 text-base-content/40" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">
+                  Confirm new password
+                </span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="size-5 text-base-content/40" />
+                </div>
+                <input
+                  className={`input input-bordered w-full pl-10`}
+                  type={showConfirmNewPassword ? "text" : "password"}
+                  placeholder="******"
+                  value={formData.confirmNewPass}
+                  onChange={(e) =>
+                    setFormData({ ...formData, confirmNewPass: e.target.value })
+                  }
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowNewPassword(!showConfirmNewPassword)}
+                >
+                  {showConfirmNewPassword ? (
                     <EyeOff className="size-5 text-base-content/40" />
                   ) : (
                     <Eye className="size-5 text-base-content/40" />

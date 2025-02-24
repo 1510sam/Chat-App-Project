@@ -197,14 +197,13 @@ export const updateUser = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
-    const { email, oldPass, newPass } = req.body;
+    const { email, newPass, confirmNewPass } = req.body;
+    if (newPass !== confirmNewPass) {
+      return res.status(400).json({ message: "New passwords do not match" });
+    }
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
-    }
-    const validPassword = await bcryptjs.compare(oldPass, user.password);
-    if (!validPassword) {
-      return res.status(400).json({ message: "Old password is incorrect" });
     }
     const salt = await bcryptjs.genSalt(10);
     // hash: pass, salt
